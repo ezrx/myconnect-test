@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes';
 import { Sun, Moon, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -137,13 +138,13 @@ export function ChatInterface() {
                       </div>
                     )}
                     <div className={cn(
-                      "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%] prose dark:prose-invert prose-sm prose-slate",
+                      "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%] prose dark:prose-invert prose-sm prose-slate prose-p:my-1 prose-pre:my-2",
                       m.role === 'user' 
                         ? "bg-[var(--user-bubble)] text-[var(--user-bubble-foreground)] rounded-tr-sm" 
                         : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-tl-sm shadow-sm"
                     )}>
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
                           code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
                             const match = /language-(\w+)/.exec(className || '');
