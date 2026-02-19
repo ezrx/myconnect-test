@@ -11,9 +11,10 @@ interface ChatContextType {
   currentSession: Session | null;
   loading: boolean;
   error: string | null;
-  createSession: (title: string) => Promise<void>;
+  createSession: (title: string) => Promise<Session | undefined>;
   selectSession: (id: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  sendMessageToId: (sessionId: string, content: string) => Promise<void>;
   deleteSession: (id: string) => Promise<void>;
   renameSession: (id: string, title: string) => Promise<void>;
   selectedModel: string;
@@ -68,6 +69,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const session = await chatUseCase.createSession(title);
       await refreshSessions();
       setCurrentSession(session);
+      return session;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
@@ -89,12 +91,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const sendMessage = async (content: string) => {
     if (!currentSession) return;
+    await sendMessageToId(currentSession.id, content);
+  };
+
+  const sendMessageToId = async (sessionId: string, content: string) => {
     setLoading(true);
     setError(null);
     try {
-      await chatUseCase.sendMessage(currentSession.id, content, selectedModel);
-      const updatedSession = await chatUseCase.getSession(currentSession.id);
-      setCurrentSession(updatedSession);
+      await chatUseCase.sendMessage(sessionId, content, selectedModel);
+      const updatedSession = await chatUseCase.getSession(sessionId);
+      if (currentSession?.id === sessionId || !currentSession) {
+        setCurrentSession(updatedSession);
+      }
       await refreshSessions();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'An unknown error occurred');
@@ -136,6 +144,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         createSession,
         selectSession,
         sendMessage,
+        sendMessageToId,
         deleteSession,
         renameSession,
         selectedModel,

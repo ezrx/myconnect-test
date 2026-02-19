@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "../src/components/theme-provider";
 import { ChatProvider } from "../src/context/ChatContext";
-import { ThemeToggle } from "../src/components/ThemeToggle";
 
 export default function RootLayout({
   children,
