@@ -3,15 +3,28 @@ import { Message } from '../../domain/entities/Session';
 import { IAIService } from '../../domain/services/IAIService';
 
 export class GeminiService implements IAIService {
-  private client: GoogleGenAI;
+  private client: GoogleGenAI | null = null;
+  private apiKey: string;
 
   constructor(apiKey: string) {
-    this.client = new GoogleGenAI({
-      apiKey: apiKey,
-    });
+    this.apiKey = apiKey;
+  }
+
+  private getClient(): GoogleGenAI {
+    if (!this.client) {
+      if (!this.apiKey) {
+        throw new Error('API key must be set when using the Gemini API. Please check your .env.local or Vercel Environment Variables.');
+      }
+      this.client = new GoogleGenAI({
+        apiKey: this.apiKey,
+      });
+    }
+    return this.client;
   }
 
   async generateResponse(messages: Message[]): Promise<string> {
+    const client = this.getClient();
+
     // Mock API delay
     await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
 
@@ -21,7 +34,7 @@ export class GeminiService implements IAIService {
     }
 
     try {
-      const response = await this.client.models.generateContent({
+      const response = await client.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: messages.map((m) => ({
           role: m.role === 'user' ? 'user' : 'model',
