@@ -25,14 +25,6 @@ export class GeminiService implements IAIService {
   async generateResponse(messages: Message[]): Promise<string> {
     const client = this.getClient();
 
-    // Mock API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-    // Simulated failure (5% chance)
-    if (Math.random() < 0.05) {
-      throw new Error('Simulated Gemini API failure');
-    }
-
     try {
       const response = await client.models.generateContent({
         model: 'gemini-2.0-flash',
@@ -49,9 +41,9 @@ export class GeminiService implements IAIService {
       
       const errorMessage = error instanceof Error ? error.message : String(error);
 
-      // Handle quota exceeded errors (usually 429)
+      // Distinguish between Rate Limit (429) and other errors
       if (errorMessage.includes('429')) {
-        return "You exceeded your current quota, please check your plan and billing details.";
+        return "The AI is currently receiving too many requests. Please wait a moment or check if your API quota has been reached on Google AI Studio.";
       }
 
       throw new Error(`Gemini Service Error: ${errorMessage}`);
