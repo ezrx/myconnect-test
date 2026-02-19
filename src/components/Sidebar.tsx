@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from '../context/ChatContext';
-import { Plus, MessageSquare, Search, X } from 'lucide-react';
+import { Plus, MessageSquare, Search, X, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -11,7 +11,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function Sidebar() {
-  const { sessions, currentSession, selectSession, createSession, loading } = useChat();
+  const { sessions, currentSession, selectSession, createSession, deleteSession, loading } = useChat();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredSessions = sessions.filter(s => 
@@ -70,6 +70,18 @@ export function Sidebar() {
                 {session.updatedAt.toLocaleDateString()}
               </p>
             </div>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this session?')) {
+                  deleteSession(session.id);
+                }
+              }}
+              className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/10 hover:text-red-500 rounded-md transition-all text-slate-400"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         ))}
       </nav>
