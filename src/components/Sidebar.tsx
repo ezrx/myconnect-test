@@ -1,8 +1,8 @@
 'use client';
 
 import { useChat } from '../context/ChatContext';
-import { Plus, MessageSquare, Search, X, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, MessageSquare, Search, X, Trash2, Edit2, Check } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -11,8 +11,39 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function Sidebar() {
-  const { sessions, currentSession, selectSession, createSession, deleteSession, loading, isSidebarOpen, setSidebarOpen } = useChat();
+  const { sessions, currentSession, selectSession, createSession, deleteSession, renameSession, loading, isSidebarOpen, setSidebarOpen } = useChat();
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const editInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingId]);
+
+  const handleStartEdit = (e: React.MouseEvent, id: string, title: string) => {
+    e.stopPropagation();
+    setEditingId(id);
+    setEditingTitle(title);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (editingTitle.trim()) {
+      await renameSession(id, editingTitle.trim());
+    }
+    setEditingId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit(id);
+    } else if (e.key === 'Escape') {
+      setEditingId(null);
+    }
+  };
 
   const filteredSessions = sessions.filter(s => 
     s.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -84,23 +115,59 @@ export function Sidebar() {
               <MessageSquare className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--foreground)] truncate">{session.title}</p>
-              <p className="truncate mt-0.5 text-[10px] text-[var(--muted-foreground)]">
-                {session.updatedAt.toLocaleDateString()}
-              </p>
+              {editingId === session.id ? (
+                <input
+                  ref={editInputRef}
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={() => handleSaveEdit(session.id)}
+                  onKeyDown={(e) => handleKeyDown(e, session.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full bg-white/50 dark:bg-black/20 border-none rounded px-1 py-0 text-sm font-medium focus:ring-1 focus:ring-primary outline-none"
+                />
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-[var(--foreground)] truncate">{session.title}</p>
+                  <p className="truncate mt-0.5 text-[10px] text-[var(--muted-foreground)]">
+                    {session.updatedAt.toLocaleDateString()}
+                  </p>
+                </>
+              )}
             </div>
             
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm('Are you sure you want to delete this session?')) {
-                  deleteSession(session.id);
-                }
-              }}
-              className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/10 hover:text-red-500 rounded-md transition-all text-slate-400"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {editingId === session.id ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSaveEdit(session.id);
+                  }}
+                  className="p-1 hover:text-green-500 transition-colors"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={(e) => handleStartEdit(e, session.id, session.title)}
+                    className="p-1 hover:text-primary transition-colors text-slate-400"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('Are you sure you want to delete this session?')) {
+                        deleteSession(session.id);
+                      }
+                    }}
+                    className="p-1 hover:text-red-500 transition-colors text-slate-400"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </nav>

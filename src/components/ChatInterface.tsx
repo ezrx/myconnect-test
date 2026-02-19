@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from '../context/ChatContext';
-import { Send, User, Bot, Loader2, AlertCircle, Menu } from 'lucide-react';
+import { Send, User, Bot, Loader2, AlertCircle, Menu, Edit2, Check } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,10 +19,42 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function ChatInterface() {
-  const { currentSession, sendMessage, loading, error, selectedModel, setSelectedModel, isSidebarOpen, toggleSidebar } = useChat();
+  const { currentSession, sendMessage, loading, error, selectedModel, setSelectedModel, isSidebarOpen, toggleSidebar, renameSession } = useChat();
   const [input, setInput] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editingTitle, setEditingTitle] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const headerInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    if (isEditingTitle && headerInputRef.current) {
+      headerInputRef.current.focus();
+      headerInputRef.current.select();
+    }
+  }, [isEditingTitle]);
+
+  const handleStartEditHeader = () => {
+    if (currentSession) {
+      setEditingTitle(currentSession.title);
+      setIsEditingTitle(true);
+    }
+  };
+
+  const handleSaveHeaderEdit = async () => {
+    if (currentSession && editingTitle.trim() && editingTitle.trim() !== currentSession.title) {
+      await renameSession(currentSession.id, editingTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleHeaderKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveHeaderEdit();
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false);
+    }
+  };
 
   const models = [
     'gemini-2.5-flash',
@@ -75,7 +107,28 @@ export function ChatInterface() {
               <Menu className="w-5 h-5" />
             </button>
           )}
-          <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
+          
+          <div className="flex items-center gap-2 group/title">
+            {isEditingTitle ? (
+              <input
+                ref={headerInputRef}
+                value={editingTitle}
+                onChange={(e) => setEditingTitle(e.target.value)}
+                onBlur={handleSaveHeaderEdit}
+                onKeyDown={handleHeaderKeyDown}
+                className="bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded px-2 py-0.5 text-lg font-medium outline-none focus:ring-1 focus:ring-primary w-full max-w-[200px]"
+              />
+            ) : (
+              <div 
+                onClick={handleStartEditHeader}
+                className="flex items-center gap-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 px-2 py-0.5 rounded transition-colors truncate max-w-[300px]"
+              >
+                <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
+                <Edit2 className="w-3.5 h-3.5 opacity-0 group-hover/title:opacity-50 transition-opacity text-[var(--muted-foreground)]" />
+              </div>
+            )}
+          </div>
+
           <div className="relative group/model shrink-0 h-8 flex items-center">
             <select
               value={selectedModel}

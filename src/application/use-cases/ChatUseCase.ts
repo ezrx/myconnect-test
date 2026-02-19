@@ -55,6 +55,22 @@ export class ChatUseCase {
 
       session.messages.push(aiMessage);
       session.updatedAt = new Date();
+
+      // Auto-summary logic: If this is the first AI response, generate a summary
+      if (session.messages.length === 2 && (session.title.toLowerCase().includes('session') || session.title.toLowerCase().includes('new chat'))) {
+        try {
+          const summary = await this.aiService.generateResponse([
+            ...session.messages,
+            { id: 'summary-prompt', role: 'user', content: 'Summarize our conversation above in 3-5 words for a chat title. Return ONLY the summary text, no quotes or punctuation.', timestamp: new Date() }
+          ], model);
+          if (summary && summary.length < 50) {
+            session.title = summary.trim();
+          }
+        } catch (summaryError) {
+          console.error('Failed to generate auto-summary:', summaryError);
+        }
+      }
+
       await this.sessionRepository.save(session);
 
       return aiMessage;
@@ -65,5 +81,13 @@ export class ChatUseCase {
 
   async deleteSession(id: string): Promise<void> {
     await this.sessionRepository.delete(id);
+  }
+
+  async renameSession(id: string, title: string): Promise<void> {
+    const session = await this.sessionRepository.getById(id);
+    if (!session) throw new Error('Session not found');
+    session.title = title;
+    session.updatedAt = new Date();
+    await this.sessionRepository.save(session);
   }
 }

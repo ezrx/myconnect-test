@@ -15,6 +15,7 @@ interface ChatContextType {
   selectSession: (id: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   deleteSession: (id: string) => Promise<void>;
+  renameSession: (id: string, title: string) => Promise<void>;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
   isSidebarOpen: boolean;
@@ -112,6 +113,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const renameSession = async (id: string, title: string) => {
+    try {
+      await chatUseCase.renameSession(id, title);
+      await refreshSessions();
+      if (currentSession?.id === id) {
+        const updated = await chatUseCase.getSession(id);
+        setCurrentSession(updated);
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -123,6 +137,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         selectSession,
         sendMessage,
         deleteSession,
+        renameSession,
         selectedModel,
         setSelectedModel,
         isSidebarOpen,
