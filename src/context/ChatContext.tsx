@@ -17,6 +17,9 @@ interface ChatContextType {
   deleteSession: (id: string) => Promise<void>;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
+  isSidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
