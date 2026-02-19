@@ -15,7 +15,12 @@ export function Sidebar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
+  const [mounted, setMounted] = useState(false);
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (editingId && editInputRef.current) {
@@ -128,8 +133,8 @@ export function Sidebar() {
               ) : (
                 <>
                   <p className="text-sm font-medium text-[var(--foreground)] truncate">{session.title}</p>
-                  <p className="truncate mt-0.5 text-[10px] text-[var(--muted-foreground)]">
-                    {session.updatedAt.toLocaleDateString()}
+                  <p className="truncate mt-0.5 text-[10px] text-[var(--muted-foreground)] h-[15px]">
+                    {mounted ? session.updatedAt.toLocaleDateString() : ''}
                   </p>
                 </>
               )}

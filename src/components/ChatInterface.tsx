@@ -26,6 +26,11 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const headerInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isEditingTitle && headerInputRef.current) {
@@ -142,7 +147,7 @@ export function ChatInterface() {
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
         >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {mounted && (theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />)}
         </button>
       </header>
 
