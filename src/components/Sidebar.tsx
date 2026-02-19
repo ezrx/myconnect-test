@@ -176,17 +176,6 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-
-      {/* Sidebar Footer: Issue Button */}
-      <div className="p-4 mt-auto">
-        <button className="bg-[var(--issue-red)] text-white rounded-full pl-1 pr-3 py-1 flex items-center gap-2 shadow-lg hover:opacity-90 transition-all">
-          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">N</div>
-          <span className="text-xs font-medium">1 Issue</span>
-          <span className="text-xs font-bold ml-1 opacity-70">
-            <X className="w-3 h-3" />
-          </span>
-        </button>
-      </div>
     </aside>
     </>
   );
