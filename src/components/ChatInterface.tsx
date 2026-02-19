@@ -1,11 +1,13 @@
 'use client';
 
 import { useChat } from '../context/ChatContext';
-import { Send, Bot, User, Loader2, AlertCircle } from 'lucide-react';
+import { Send, User, Bot, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
+import { Sun, Moon } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,6 +17,7 @@ export function ChatInterface() {
   const { currentSession, sendMessage, loading, error } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,12 +35,12 @@ export function ChatInterface() {
 
   if (!currentSession) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-background">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[var(--background)]">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-          <Bot className="w-8 h-8 text-primary" />
+          <Bot className="w-8 h-8 text-[var(--foreground)]" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Welcome to AI Chat</h2>
-        <p className="text-muted-foreground max-w-md">
+        <h2 className="text-2xl font-bold mb-2 text-[var(--foreground)]">Welcome to AI Chat</h2>
+        <p className="text-[var(--muted-foreground)] max-w-md">
           Select a session from the sidebar or create a new one to start conversing with Gemini AI.
         </p>
       </div>
@@ -45,104 +48,144 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-background text-foreground relative">
-      <header className="h-16 border-b flex items-center px-6 glass sticky top-0 z-10 justify-between">
-        <h2 className="font-semibold truncate">{currentSession.title}</h2>
+    <main className="flex-1 flex flex-col min-w-0 bg-[var(--background)] relative h-screen overflow-hidden">
+      {/* Chat Header */}
+      <header className="h-14 flex items-center justify-between px-6 border-b border-transparent shrink-0">
+        <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
+        <button 
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
-        <AnimatePresence>
-          {currentSession.messages.map((m) => (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              key={m.id}
-              className={cn(
-                "flex w-full mb-4",
-                m.role === 'user' ? "justify-end" : "justify-start"
-              )}
-            >
-              <div className={cn(
-                "flex max-w-[80%] gap-3",
-                m.role === 'user' ? "flex-row-reverse" : "flex-row"
-              )}>
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
-                  m.role === 'user' ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground"
-                )}>
-                  {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                </div>
-                <div className={cn(
-                  "p-4 rounded-2xl shadow-sm text-sm leading-relaxed",
-                  m.role === 'user' 
-                    ? "bg-primary text-primary-foreground rounded-tr-none" 
-                    : "bg-card border text-card-foreground rounded-tl-none"
-                )}>
-                  {m.content}
-                </div>
+      {/* Chat Content Flow */}
+      <section className="flex-1 overflow-y-auto px-4 sm:px-10 pb-40 scroll-smooth custom-scrollbar">
+        <div className="max-w-4xl mx-auto flex flex-col gap-6 pt-10">
+          <AnimatePresence initial={false}>
+            {currentSession.messages.map((m) => {
+              const isQuotaExceeded = m.content.includes('You exceeded your current quota');
+              
+              if (isQuotaExceeded) {
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={m.id}
+                    className="flex w-full justify-start mt-4"
+                  >
+                    <div className="flex items-start gap-3 border border-[var(--foreground)] rounded-lg p-4 max-w-2xl bg-[var(--background)]/50">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full border border-slate-400 flex items-center justify-center bg-[var(--background)] text-slate-600">
+                          <AlertCircle className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-sm text-[var(--foreground)] leading-relaxed pt-1">
+                        {m.content}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              }
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={m.id}
+                  className={cn(
+                    "flex flex-col gap-3",
+                    m.role === 'user' ? "items-end" : "items-start"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-start gap-3 w-full",
+                    m.role === 'user' ? "justify-end" : "justify-start"
+                  )}>
+                    {m.role !== 'user' && (
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 bg-[var(--background)] shadow-sm">
+                          <Bot className="w-4 h-4" />
+                        </div>
+                      </div>
+                    )}
+                    <div className={cn(
+                      "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%]",
+                      m.role === 'user' 
+                        ? "bg-[var(--user-bubble)] text-slate-800 rounded-tr-sm" 
+                        : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-tl-sm shadow-sm"
+                    )}>
+                      {m.content}
+                    </div>
+                    {m.role === 'user' && (
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 bg-[var(--background)] shadow-sm">
+                          <User className="w-4 h-4" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {loading && (
+            <div className="flex gap-3 animate-pulse">
+              <div className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 bg-[var(--background)] shadow-sm">
+                <Bot className="w-4 h-4" />
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {loading && (
-          <div className="flex gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shadow-sm">
-              <Bot className="w-4 h-4 text-muted-foreground" />
+              <div className="bg-[var(--background)] border border-[var(--border)] p-4 rounded-2xl rounded-tl-sm text-sm w-32 flex items-center gap-2 shadow-sm text-[var(--foreground)]">
+                <Loader2 className="w-4 h-4 animate-spin text-[var(--muted-foreground)]" />
+                <span className="text-[var(--muted-foreground)]">Thinking...</span>
+              </div>
             </div>
-            <div className="bg-secondary p-4 rounded-2xl rounded-tl-none text-sm w-32 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Thinking...</span>
-            </div>
-          </div>
-        )}
+          )}
 
-        <div ref={messagesEndRef} />
-      </div>
+          <div ref={messagesEndRef} />
+        </div>
+      </section>
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/90 to-transparent">
-        <div className="max-w-3xl mx-auto space-y-2">
+      {/* Footer Input Area */}
+      <footer className="absolute bottom-0 left-0 right-0 bg-[var(--background)]/90 backdrop-blur-sm pb-6 pt-2 px-4 shrink-0">
+        <div className="max-w-3xl mx-auto w-full">
           {error && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg text-sm"
+              className="flex items-center gap-2 p-3 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl text-sm mb-4"
             >
               <AlertCircle className="w-4 h-4" />
-              <span>{error}</span>
-              <button onClick={() => sendMessage(input)} className="ml-auto underline font-medium">Retry</button>
+              <span className="truncate">{error}</span>
+              <button onClick={() => sendMessage(input)} className="ml-auto underline font-medium shrink-0">Retry</button>
             </motion.div>
           )}
 
-          <form onSubmit={handleSend} className="relative group">
-            <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-focus-within:bg-primary/10 transition-all opacity-0 group-focus-within:opacity-100" />
-            <div className="relative flex items-end gap-2 p-2 bg-card border rounded-2xl shadow-lg ring-offset-background transition-all focus-within:ring-2 focus-within:ring-ring">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Message Gemini..."
-                className="flex-1 max-h-32 min-h-[44px] bg-transparent border-none focus:ring-0 outline-none p-3 text-sm resize-none scrollbar-hide"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend(e);
-                  }
-                }}
-              />
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                className="p-3 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:grayscale"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-[10px] text-center text-muted-foreground mt-2">
-              Gemini can make mistakes. Check important info.
-            </p>
+          <form onSubmit={handleSend} className="relative w-full border-2 border-[var(--input)] bg-[var(--background)] shadow-sm transition-all focus-within:shadow-md h-[56px] flex items-center rounded-full group">
+            <input 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={loading}
+              className="w-full h-full bg-transparent border-none focus:ring-0 px-6 text-base placeholder-slate-500 rounded-full text-[var(--foreground)]"
+              placeholder="Message Gemini..."
+              type="text"
+            />
+            <button 
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="absolute right-2 p-2 mr-1 text-slate-500 hover:text-[var(--foreground)] transition-colors disabled:opacity-30"
+            >
+              <Send className="w-6 h-6" />
+            </button>
           </form>
+
+          {/* Disclaimer */}
+          <div className="text-center mt-2">
+            <p className="text-[12px] text-[var(--muted-foreground)]">Gemini can make mistakes. Check important info.</p>
+          </div>
         </div>
-      </div>
-    </div>
+      </footer>
+    </main>
   );
 }
