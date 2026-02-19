@@ -1,6 +1,6 @@
-import { Session, Message, Role } from '../entities/Session';
-import { ISessionRepository } from '../repositories/ISessionRepository';
-import { IAIService } from '../services/IAIService';
+import { Session, Message, Role } from '../../domain/entities/Session';
+import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
+import { IAIService } from '../../domain/services/IAIService';
 
 export class ChatUseCase {
   constructor(
