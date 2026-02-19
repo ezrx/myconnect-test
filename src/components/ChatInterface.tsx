@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from '../context/ChatContext';
-import { Send, User, Bot, Loader2, AlertCircle } from 'lucide-react';
+import { Send, User, Bot, Loader2, AlertCircle, Menu } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,7 +19,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function ChatInterface() {
-  const { currentSession, sendMessage, loading, error, selectedModel, setSelectedModel } = useChat();
+  const { currentSession, sendMessage, loading, error, selectedModel, setSelectedModel, isSidebarOpen, toggleSidebar } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
@@ -67,6 +67,14 @@ export function ChatInterface() {
       {/* Chat Header */}
       <header className="h-14 flex items-center justify-between px-6 border-b border-[var(--border)] shrink-0 bg-[var(--background)]/80 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4 min-w-0">
+          {!isSidebarOpen && (
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
           <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
           <div className="relative group/model shrink-0 h-8 flex items-center">
             <select

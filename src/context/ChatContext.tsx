@@ -27,6 +27,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.0-flash');
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Initialize dependencies (DI)
   const repo = new LocalStorageSessionRepository();
@@ -107,6 +122,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         deleteSession,
         selectedModel,
         setSelectedModel,
+        isSidebarOpen,
+        setSidebarOpen,
+        toggleSidebar: () => setSidebarOpen(prev => !prev),
       }}
     >
       {children}

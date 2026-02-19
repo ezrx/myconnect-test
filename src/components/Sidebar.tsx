@@ -11,7 +11,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function Sidebar() {
-  const { sessions, currentSession, selectSession, createSession, deleteSession, loading } = useChat();
+  const { sessions, currentSession, selectSession, createSession, deleteSession, loading, isSidebarOpen, setSidebarOpen } = useChat();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredSessions = sessions.filter(s => 
@@ -19,18 +19,37 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="w-[260px] bg-[var(--sidebar)] flex flex-col border-r border-[var(--border)] flex-shrink-0 relative h-screen">
-      {/* Sidebar Header: New Chat */}
-      <div className="pt-4 pb-2 px-4">
-        <button 
-          onClick={() => createSession(`Session ${sessions.length + 1}`)}
-          disabled={loading}
-          className="flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors gap-2 ml-2 disabled:opacity-50"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Chat</span>
-        </button>
-      </div>
+    <>
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-40 lg:relative lg:z-0 w-[260px] bg-[var(--sidebar)] flex flex-col border-r border-[var(--border)] transition-transform duration-300 ease-in-out h-full",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
+      )}>
+        {/* Sidebar Header: New Chat & Close Button */}
+        <div className="pt-4 pb-2 px-4 flex items-center justify-between">
+          <button 
+            onClick={() => createSession(`Session ${sessions.length + 1}`)}
+            disabled={loading}
+            className="flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors gap-2 ml-2 disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Chat</span>
+          </button>
+          
+          <button 
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 text-slate-500 hover:text-slate-700"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
       {/* Sidebar Search */}
       <div className="px-4 py-2">
@@ -97,5 +116,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
