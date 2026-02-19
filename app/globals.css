@@ -11,6 +11,7 @@
   --sidebar: #f3f5f7;
   --active-chat: #e0e4e9;
   --user-bubble: #e7e9ed;
+  --user-bubble-foreground: #1e293b;
   --issue-red: #b94a48;
   --border: #f1f5f9;
   --input: #334155; /* slate-700 */
@@ -20,16 +21,17 @@
 }
 
 [data-theme="dark"] {
-  --background: #111827; /* grey-900 */
-  --foreground: #f3f4f6;
-  --sidebar: #1f2937; /* grey-800 */
-  --active-chat: #374151; /* grey-700 */
-  --user-bubble: #374151;
+  --background: #0f172a; /* Slate-950 */
+  --foreground: #f8fafc; /* Slate-50 */
+  --sidebar: #1e293b; /* Slate-800 */
+  --active-chat: #334155; /* Slate-700 */
+  --user-bubble: #1e293b; /* Slate-800 */
+  --user-bubble-foreground: #f8fafc;
   --issue-red: #991b1b;
-  --border: #374151;
-  --input: #f3f4f6;
-  --muted-foreground: #9ca3af;
-  --card: #1f2937;
+  --border: #334155;
+  --input: #f8fafc;
+  --muted-foreground: #94a3b8;
+  --card: #1e293b;
   --primary: #ffffff;
 }
 

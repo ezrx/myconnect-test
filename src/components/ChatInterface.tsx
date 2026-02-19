@@ -52,12 +52,6 @@ export function ChatInterface() {
       {/* Chat Header */}
       <header className="h-14 flex items-center justify-between px-6 border-b border-transparent shrink-0">
         <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
-        <button 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-        >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
       </header>
 
       {/* Chat Content Flow */}
@@ -113,7 +107,7 @@ export function ChatInterface() {
                     <div className={cn(
                       "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%]",
                       m.role === 'user' 
-                        ? "bg-[var(--user-bubble)] text-slate-800 rounded-tr-sm" 
+                        ? "bg-[var(--user-bubble)] text-[var(--user-bubble-foreground)] rounded-tr-sm" 
                         : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-tl-sm shadow-sm"
                     )}>
                       {m.content}
