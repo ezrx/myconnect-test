@@ -22,12 +22,12 @@ export class GeminiService implements IAIService {
     return this.client;
   }
 
-  async generateResponse(messages: Message[]): Promise<string> {
+  async generateResponse(messages: Message[], model: string = 'models/gemini-2.0-flash'): Promise<string> {
     const client = this.getClient();
 
     try {
       const response = await client.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: model.startsWith('models/') ? model : `models/${model}`,
         contents: messages.map((m) => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }],

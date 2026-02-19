@@ -15,6 +15,8 @@ interface ChatContextType {
   selectSession: (id: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   deleteSession: (id: string) => Promise<void>;
+  selectedModel: string;
+  setSelectedModel: (model: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.0-flash');
 
   // Initialize dependencies (DI)
   const repo = new LocalStorageSessionRepository();
@@ -70,8 +73,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      // Optimistic update could be added here, but let's keep it simple for now as requested
-      await chatUseCase.sendMessage(currentSession.id, content);
+      await chatUseCase.sendMessage(currentSession.id, content, selectedModel);
       const updatedSession = await chatUseCase.getSession(currentSession.id);
       setCurrentSession(updatedSession);
       await refreshSessions();
@@ -103,6 +105,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         selectSession,
         sendMessage,
         deleteSession,
+        selectedModel,
+        setSelectedModel,
       }}
     >
       {children}

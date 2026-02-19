@@ -1,5 +1,5 @@
 import { Message } from '../entities/Session';
 
 export interface IAIService {
-  generateResponse(messages: Message[]): Promise<string>;
+  generateResponse(messages: Message[], model?: string): Promise<string>;
 }

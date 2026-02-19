@@ -6,15 +6,32 @@ import { useState, useRef, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
+import { Sun, Moon, ChevronDown } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function ChatInterface() {
-  const { currentSession, sendMessage, loading, error } = useChat();
+  const { currentSession, sendMessage, loading, error, selectedModel, setSelectedModel } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
+
+  const models = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite-preview-02-05',
+    'gemini-2.0-pro-exp-02-05',
+    'gemini-2.0-flash-thinking-exp-01-21',
+    'gemini-pro-latest',
+    'gemini-flash-latest'
+  ]; // Filtered for common usage but including requested ones
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -47,8 +64,26 @@ export function ChatInterface() {
   return (
     <main className="flex-1 flex flex-col min-w-0 bg-[var(--background)] relative h-screen overflow-hidden">
       {/* Chat Header */}
-      <header className="h-14 flex items-center justify-between px-6 border-b border-transparent shrink-0">
-        <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
+      <header className="h-14 flex items-center justify-between px-6 border-b border-[var(--border)] shrink-0 bg-[var(--background)]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4 min-w-0">
+          <h1 className="text-lg font-medium text-[var(--foreground)] truncate">{currentSession.title}</h1>
+          <div className="relative group/model shrink-0 h-8 flex items-center">
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="appearance-none bg-[var(--sidebar)] border border-[var(--border)] text-[var(--muted-foreground)] text-xs rounded-full py-1 pl-3 pr-8 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer hover:bg-[var(--active-chat)] transition-colors"
+            >
+              {models.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <ChevronDown className="w-3 h-3 absolute right-3 pointer-events-none text-[var(--muted-foreground)]" />
+          </div>
+        </div>
+        <button 
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
       </header>
 
       {/* Chat Content Flow */}
@@ -102,12 +137,37 @@ export function ChatInterface() {
                       </div>
                     )}
                     <div className={cn(
-                      "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%]",
+                      "px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[80%] prose dark:prose-invert prose-sm prose-slate",
                       m.role === 'user' 
                         ? "bg-[var(--user-bubble)] text-[var(--user-bubble-foreground)] rounded-tr-sm" 
                         : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-tl-sm shadow-sm"
                     )}>
-                      {m.content}
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code({ inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
+                            const match = /language-(\w+)/.exec(className || '');
+                            return !inline && match ? (
+                              <SyntaxHighlighter
+                                style={vscDarkPlus}
+                                language={match[1]}
+                                PreTag="div"
+                                className="rounded-md my-2"
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                {...(props as any)}
+                              >
+                                {String(children).replace(/\n$/, '')}
+                              </SyntaxHighlighter>
+                            ) : (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
+                          }
+                        }}
+                      >
+                        {m.content}
+                      </ReactMarkdown>
                     </div>
                     {m.role === 'user' && (
                       <div className="flex-shrink-0 mt-1">

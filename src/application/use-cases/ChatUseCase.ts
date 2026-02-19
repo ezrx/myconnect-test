@@ -28,7 +28,7 @@ export class ChatUseCase {
     return this.sessionRepository.getById(id);
   }
 
-  async sendMessage(sessionId: string, content: string): Promise<Message> {
+  async sendMessage(sessionId: string, content: string, model?: string): Promise<Message> {
     const session = await this.sessionRepository.getById(sessionId);
     if (!session) throw new Error('Session not found');
 
@@ -44,7 +44,7 @@ export class ChatUseCase {
     await this.sessionRepository.save(session);
 
     try {
-      const aiResponseContent = await this.aiService.generateResponse(session.messages);
+      const aiResponseContent = await this.aiService.generateResponse(session.messages, model);
       
       const aiMessage: Message = {
         id: crypto.randomUUID(),
