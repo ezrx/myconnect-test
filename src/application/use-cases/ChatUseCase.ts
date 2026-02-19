@@ -1,4 +1,4 @@
-import { Session, Message, Role } from '../../domain/entities/Session';
+import { Session, Message } from '../../domain/entities/Session';
 import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
 import { IAIService } from '../../domain/services/IAIService';
 

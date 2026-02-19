@@ -1,8 +1,8 @@
 'use strict';
 
 import * as React from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProvider as NextThemesProvider, type ThemeProviderProps } from 'next-themes';
 
-export function ThemeProvider({ children, ...props }: { children: React.ReactNode; [key: string]: any }) {
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider attribute="data-theme" defaultTheme="system" enableSystem {...props}>{children}</NextThemesProvider>;
 }

@@ -1,4 +1,4 @@
-import { Session, Message, Role } from '../../domain/entities/Session';
+import { Session } from '../../domain/entities/Session';
 import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
 
 const STORAGE_KEY = 'ai_sessions';
@@ -10,15 +10,15 @@ export class LocalStorageSessionRepository implements ISessionRepository {
     if (!data) return [];
     try {
       const parsed = JSON.parse(data);
-      return parsed.map((s: any) => ({
+      return parsed.map((s: Record<string, unknown>) => ({
         ...s,
-        createdAt: new Date(s.createdAt),
-        updatedAt: new Date(s.updatedAt),
-        messages: s.messages.map((m: any) => ({
+        createdAt: new Date(s.createdAt as string),
+        updatedAt: new Date(s.updatedAt as string),
+        messages: (s.messages as Record<string, unknown>[]).map((m: Record<string, unknown>) => ({
           ...m,
-          timestamp: new Date(m.timestamp),
+          timestamp: new Date(m.timestamp as string),
         })),
-      }));
+      })) as Session[];
     } catch {
       return [];
     }

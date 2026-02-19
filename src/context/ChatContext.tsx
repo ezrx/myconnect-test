@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ChatUseCase } from '../application/use-cases/ChatUseCase';
 import { LocalStorageSessionRepository } from '../infrastructure/repositories/LocalStorageSessionRepository';
 import { GeminiService } from '../infrastructure/services/GeminiService';
-import { Session, Message } from '../domain/entities/Session';
+import { Session } from '../domain/entities/Session';
 
 interface ChatContextType {
   sessions: Session[];
@@ -37,6 +37,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createSession = async (title: string) => {
@@ -45,8 +46,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const session = await chatUseCase.createSession(title);
       await refreshSessions();
       setCurrentSession(session);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -57,8 +58,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     try {
       const session = await chatUseCase.getSession(id);
       setCurrentSession(session);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -74,8 +75,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const updatedSession = await chatUseCase.getSession(currentSession.id);
       setCurrentSession(updatedSession);
       await refreshSessions();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -86,8 +87,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       await chatUseCase.deleteSession(id);
       if (currentSession?.id === id) setCurrentSession(null);
       await refreshSessions();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     }
   };
 

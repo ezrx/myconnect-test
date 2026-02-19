@@ -44,15 +44,17 @@ export class GeminiService implements IAIService {
 
       if (!response.text) throw new Error('No response from AI');
       return response.text;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Gemini API Error:', error);
       
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
       // Handle quota exceeded errors (usually 429)
-      if (error?.message?.includes('429') || error?.status === 429 || error?.code === 429) {
+      if (errorMessage.includes('429')) {
         return "You exceeded your current quota, please check your plan and billing details.";
       }
 
-      throw new Error(`Gemini Service Error: ${error.message}`);
+      throw new Error(`Gemini Service Error: ${errorMessage}`);
     }
   }
 }
